@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pomodoro App</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: "Roboto", sans-serif;
+      }
+      .container {
+        width: 400px;
+        height: 400px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: rgb(0, 0, 61);
+        padding: 50px 20px;
+        border-radius: 15px;
+      }
+
+      .timer-container {
+        margin-bottom: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 80%;
+      }
+      .timer-container button {
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, 1);
+        color: white;
+        font-weight: bold;
+        background-color: rgb(243, 72, 109);
+        cursor: pointer;
+      }
+      .timer-container button:hover {
+        transform: scale(1.2);
+      }
+      .timer-container .active {
+        background-color: #db2a34;
+      }
+      #longbrkbtn {
+        display: none;
+      }
+      .pomdoro-count {
+        margin-bottom: 20px;
+        display: none;
+        font-weight: 800;
+      }
+      .function-buttons {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 80%;
+      }
+      .function-buttons button:hover {
+        transform: scale(1.2);
+      }
+      #startbtn,
+      #pausebtn,
+      #resetbtn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, 1);
+        color: white;
+        font-weight: bold;
+        background-color: rgb(243, 72, 109);
+        cursor: pointer;
+      }
+      #startbtn {
+        background-color: green;
+      }
+      #pausebtn {
+        background-color: #db2a34;
+      }
+      #resetbtn {
+        background-color: rgb(255, 166, 0);
+      }
+      .progressbar {
+        height: 180px;
+        width: 180px;
+        background: conic-gradient(crimson 0deg, rgb(243, 72, 109) 0deg);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: pulse 3s infinite;
+        transition: all ease;
+        margin-bottom: 50px;
+      }
+      .progrsbar-inner {
+        height: 90%;
+        width: 90%;
+        background: rgb(3, 3, 63);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .progressbar-number {
+        color: white;
+        font-weight: 900;
+        font-size: 2rem;
+      }
+      @keyframes pulse {
+        0% {
+          transform: scale(0.97);
+        }
+        50% {
+          transform: scale(1);
+        }
+        100% {
+          transform: scale(0.97);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="timer-container">
+        <button id="pomodorobtn" class="active">Pomodoro</button>
+        <button id="shortbrkbtn">Shortbreak</button>
+        <button id="longbrkbtn">Long break</button>
+      </div>
+      <div class="pomdoro-count"></div>
+      <div class="progressbar">
+        <div class="progrsbar-inner">
+          <h2 class="progressbar-number">25:00</h2>
+        </div>
+      </div>
+      <div class="function-buttons">
+        <button id="startbtn">Start</button>
+        <button id="pausebtn">Pause</button>
+        <button id="resetbtn">Reset</button>
+      </div>
+    </div>
+    <script>
+      const startBtn = document.querySelector("#startbtn");
+      const stopBtn = document.querySelector("#pausebtn");
+      const resetBtn = document.querySelector("#resetbtn");
+      const progressbar = document.querySelector(".progressbar");
+      const progressbarNumber = document.querySelector(
+        ".progressbar .progressbar-number"
+      );
+      const pomodoroBtn = document.getElementById("pomodorobtn");
+      const shortbrkBtn = document.getElementById("shortbrkbtn");
+      const longbrkBtn = document.getElementById("longbrkbtn");
+      const pomCount = document.querySelector(".pomdoro-count");
+      let pomdoroCount = 0;
+      const pomodorountilLongbrk = 4;
+      const pomodorotimer = 1500;
+      const shortbreaktimer = 5;
+      const longbreaktimer = 900;
+
+      let timerValue = pomodorotimer;
+      let progressInterval;
+      let pomodoroType = "POMODORO";
+      startBtn.addEventListener("click", () => {
+        startTimer();
+      });
+      stopBtn.addEventListener("click", () => {
+        pauseTimer();
+      });
+      pomodoroBtn.addEventListener("click", () => {
+        setTimeType("POMODORO");
+      });
+      shortbrkBtn.addEventListener("click", () => {
+        setTimeType("SHORTBREAK");
+      });
+      longbrkBtn.addEventListener("click", () => {
+        setTimeType("LONGBREAK");
+      });
+      resetBtn.addEventListener("click", () => {
+        resetTimer();
+      });
+      function NumbertoString(number) {
+        const minutes = Math.trunc(number / 60)
+          .toString()
+          .padStart(2, "0");
+        const seconds = Math.trunc(number % 60)
+          .toString()
+          .padStart(2, "0");
+        return `${minutes}:${seconds}`;
+      }
+      function startTimer() {
+        progressInterval = setInterval(() => {
+          timerValue--;
+          console.log(timerValue);
+          setProgressInfo();
+          if (timerValue === 0) {
+            clearInterval(progressInterval);
+            pomdoroCount++;
+            pomCount.style.display = "block";
+            pomCount.style.color = "white";
+            pomCount.style.fontSize = "30px";
+            pomCount.textContent = `Pomodoro Count  ${pomdoroCount}`;
+            if (pomdoroCount % pomodorountilLongbrk === 0) {
+              longbrkBtn.style.display = "flex";
+            }
+            setTimeType(pomodoroType);
+          }
+        }, 1000);
+      }
+      function pauseTimer() {
+        clearInterval(progressInterval);
+      }
+      function resetTimer() {
+        clearInterval(progressInterval);
+        timerValue =
+          pomodoroType === "POMODORO"
+            ? pomodorotimer
+            : pomodoroType === "SHORTBREAK"
+            ? shortbreaktimer
+            : longbreaktimer;
+        multipliervalue = 360 / timerValue;
+        setProgressInfo();
+      }
+      function setProgressInfo() {
+        progressbarNumber.textContent = `${NumbertoString(timerValue)}`;
+        progressbar.style.background = `conic-gradient(rgb(243, 72, 109) ${
+          timerValue * multipliervalue
+        }deg,crimson 0deg)`;
+      }
+      function setTimeType(type) {
+        pomodoroType = type;
+        if (type === "POMODORO") {
+          pomodoroBtn.classList.add("active");
+          shortbrkBtn.classList.remove("active");
+          longbrkBtn.classList.remove("active");
+        } else if (type === "SHORTBREAK") {
+          pomodoroBtn.classList.remove("active");
+          shortbrkBtn.classList.add("active");
+          longbrkBtn.classList.remove("active");
+        } else {
+          pomodoroBtn.classList.remove("active");
+          shortbrkBtn.classList.remove("active");
+          longbrkBtn.classList.add("active");
+        }
+        resetTimer();
+      }
+    </script>
+  </body>
+</html>
